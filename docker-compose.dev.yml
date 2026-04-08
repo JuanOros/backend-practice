@@ -1,0 +1,27 @@
+# docker-compose.dev.yml
+#
+# Development override — run with:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Or create a simple alias in your shell:
+#   alias dc-dev="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
+#
+# This override:
+#   - Replaces the production build with a dev server (hot reload)
+#   - Mounts the source code as a volume (changes reflect immediately)
+#   - Uses the dev CMD
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      target: deps  # stop at the deps stage — no production build needed
+    command: sh -c "npx prisma migrate deploy && npm run dev"
+    volumes:
+      # Mount source code into the container — enables hot reload
+      - .:/app
+      # Prevent host node_modules from overwriting container's
+      - /app/node_modules
+    environment:
+      NODE_ENV: development

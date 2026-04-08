@@ -1,0 +1,16 @@
+# .dockerignore
+# Files listed here are NOT sent to the Docker build context.
+# This speeds up builds and prevents sensitive files from entering the image.
+
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+.DS_Store
+coverage
+.nyc_output
