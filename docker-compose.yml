@@ -1,0 +1,72 @@
+# docker-compose.yml
+#
+# Defines the full local development environment.
+# Run everything with: docker compose up
+# Stop everything with: docker compose down
+#
+# Services:
+#   postgres  — PostgreSQL database (local equivalent of Neon)
+#   app       — Next.js application
+
+version: '3.8'
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    # alpine variant is smaller than the default postgres image
+    container_name: backend_practice_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: backend_practice
+
+    ports:
+      # host:container — maps localhost:5432 to the container's port 5432
+      # This lets you connect from your host machine with any PostgreSQL client
+      - '5432:5432'
+
+    volumes:
+      # Named volume — persists data between `docker compose down` and `up`
+      # Without this, all data is lost when the container stops
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      # Docker will wait for this command to succeed before marking the service healthy
+      # The app service uses `depends_on: condition: service_healthy` to wait for this
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d backend_practice']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Next.js Application ──────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend_practice_app
+    restart: unless-stopped
+
+    ports:
+      - '3000:3000'
+
+    environment:
+      # Use the service name 'postgres' as the hostname — Docker's internal DNS
+      # resolves service names automatically within the same network
+      DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/backend_practice'
+      NODE_ENV: production
+      NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+      # Add other env vars here or use an env_file:
+      # env_file: .env.local
+
+    depends_on:
+      postgres:
+        condition: service_healthy  # wait for postgres to be ready before starting app
+
+volumes:
+  # Named volumes are managed by Docker and persist across container restarts
+  postgres_data:
+    driver: local
