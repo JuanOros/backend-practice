@@ -1,8 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'backend-practice',
@@ -12,17 +9,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-50 text-gray-900 antialiased`}>
-        <nav className="border-b border-gray-200 bg-white px-6 py-3">
-          <div className="mx-auto flex max-w-4xl items-center justify-between">
-            <a href="/" className="font-semibold text-gray-900">backend-practice</a>
-            <div className="flex gap-4 text-sm">
-              <a href="/tasks" className="text-gray-500 hover:text-gray-900 transition-colors">Tasks</a>
-              <a href="/users" className="text-gray-500 hover:text-gray-900 transition-colors">Users</a>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+        <nav className="bg-white border-b border-slate-200 shadow-sm">
+          <div className="mx-auto max-w-5xl px-6 py-4 flex items-center justify-between">
+            <a href="/" className="text-lg font-bold text-slate-900 tracking-tight">
+              backend<span className="text-blue-600">-practice</span>
+            </a>
+            <div className="flex gap-1">
+              <a href="/tasks" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                Tasks
+              </a>
+              <a href="/users" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                Users
+              </a>
             </div>
           </div>
         </nav>
-        <main className="mx-auto max-w-4xl p-6">{children}</main>
+        <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
       </body>
     </html>
   )
