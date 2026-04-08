@@ -10,9 +10,12 @@
 
 import { Resend } from 'resend'
 
-// Resend client is initialized with the API key from environment variables.
-// The ! asserts that RESEND_API_KEY is defined — make sure it is in .env.local
-const resend = new Resend(process.env.RESEND_API_KEY!)
+// Lazy-initialize the Resend client so the module can be imported at build time
+// even when RESEND_API_KEY is not set (e.g., during `next build` on Vercel).
+// The key is only required at runtime when sendWeeklyReport() is actually called.
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY!)
+}
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +47,7 @@ export async function sendWeeklyReport(data: WeeklyReportData): Promise<void> {
 
   // Resend accepts HTML directly — for production apps consider
   // using a templating library like react-email for more complex layouts
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: process.env.EMAIL_FROM!,
     to: process.env.EMAIL_TO!,
     subject: `Weekly Task Report — ${sentAt}`,

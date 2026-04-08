@@ -21,7 +21,7 @@ import { z } from 'zod'
 
 export const createTaskSchema = z.object({
   title: z
-    .string({ required_error: 'Title is required' })
+    .string({ error: 'Title is required' })
     .min(1, 'Title cannot be empty')
     .max(200, 'Title must be 200 characters or less')
     .trim(), // trim() removes leading/trailing whitespace before validation
@@ -47,13 +47,13 @@ export const updateTaskSchema = z.object({
 
 export const createUserSchema = z.object({
   name: z
-    .string({ required_error: 'Name is required' })
+    .string({ error: 'Name is required' })
     .min(1, 'Name cannot be empty')
     .max(100, 'Name must be 100 characters or less')
     .trim(),
 
   email: z
-    .string({ required_error: 'Email is required' })
+    .string({ error: 'Email is required' })
     .email('Must be a valid email address')
     .toLowerCase(), // normalize to lowercase before saving
 })

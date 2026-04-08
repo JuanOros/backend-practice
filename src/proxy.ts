@@ -56,9 +56,10 @@ async function getRateLimiter() {
   return ratelimit
 }
 
-// ─── Middleware Function ───────────────────────────────────────────────────
+// ─── Proxy Function ───────────────────────────────────────────────────────
+// Next.js 16 renamed "middleware" to "proxy" — the function must also be named "proxy"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = NextResponse.next()
 
   // ── 1. Security Headers ──────────────────────────────────────────────────
