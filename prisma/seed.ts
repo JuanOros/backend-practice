@@ -5,9 +5,17 @@
 // Run with: npx prisma db seed
 // (after adding "prisma": { "seed": "ts-node prisma/seed.ts" } to package.json)
 
-import { PrismaClient, TaskStatus } from '@prisma/client'
+import 'dotenv/config'
+import dotenv from 'dotenv'
+// Load .env.local before importing Prisma so DATABASE_URL is available
+dotenv.config({ path: '.env.local', override: true })
 
-const prisma = new PrismaClient()
+import { PrismaClient, TaskStatus } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+
+// Prisma 7 uses a driver adapter instead of a url in the schema
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   console.log('🌱 Seeding database...')

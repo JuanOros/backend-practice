@@ -1,6 +1,7 @@
-// src/middleware.ts
+// src/proxy.ts
 //
-// Next.js Edge Middleware — runs on the Edge Runtime BEFORE any route handler.
+// Next.js Edge Proxy — runs on the Edge Runtime BEFORE any route handler.
+// (renamed from middleware.ts in Next.js 16 — same functionality, new filename)
 //
 // This is the ideal place for:
 //   - Security headers (prevent common web attacks)

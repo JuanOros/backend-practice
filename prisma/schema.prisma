@@ -15,10 +15,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL is configured in prisma.config.ts (Prisma 7 requirement)
 datasource db {
   provider = "postgresql"
-  // DATABASE_URL is loaded from .env.local — never hardcode credentials
-  url      = env("DATABASE_URL")
 }
 
 // ─── User ──────────────────────────────────────────────────────────────────
@@ -56,11 +55,9 @@ model Task {
   // Foreign key — links a task to a user
   // String? = nullable, so tasks can exist without an owner
   userId      String?
-  user        User?      @relation(
-    fields:     [userId],    // the column in THIS table
-    references: [id],        // the column in the OTHER table
-    onDelete:   SetNull      // if user is deleted, set userId to NULL (don't cascade-delete tasks)
-  )
+  // @relation links this task to a user via userId foreign key.
+  // onDelete: SetNull — if the user is deleted, userId becomes NULL (tasks are preserved)
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 // ─── Enums ─────────────────────────────────────────────────────────────────
