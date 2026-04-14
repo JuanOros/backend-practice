@@ -1,70 +1,91 @@
-// prisma/schema.prisma
-//
-// This file defines your database structure.
-// Think of it as the "blueprint" of your data.
-//
-// IMPORTANT: After ANY change to this file, run:
-//   npx prisma migrate dev --name <description-of-change>
-//
-// Prisma will:
-//   1. Generate a SQL migration file
-//   2. Apply it to your database
-//   3. Regenerate the TypeScript client
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// DATABASE_URL is configured in prisma.config.ts (Prisma 7 requirement)
 datasource db {
   provider = "postgresql"
 }
 
-// ─── User ──────────────────────────────────────────────────────────────────
-// A basic user model to demonstrate foreign key relationships.
-// In a real app, you'd add password hash, roles, email verification, etc.
 model User {
   id        String   @id @default(cuid())
-  // cuid() generates collision-resistant IDs — safer than sequential integers
-  // because they don't expose how many records exist in your database
 
   name      String
-  email     String   @unique  // @unique creates a database index automatically
+  email     String   @unique  
 
-  // Timestamps — Prisma manages these automatically
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt  // auto-updates on every write
+  updatedAt DateTime @updatedAt
 
-  // Relation: one user can have many tasks
-  // This field doesn't create a column — it's a virtual relation for Prisma queries
   tasks     Task[]
 }
 
-// ─── Task ──────────────────────────────────────────────────────────────────
-// The main entity for practicing CRUD operations.
 model Task {
   id          String     @id @default(cuid())
   title       String
-  description String?    // ? = nullable — this column allows NULL in the database
+  description String?    
 
   status      TaskStatus @default(PENDING)
 
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  // Foreign key — links a task to a user
-  // String? = nullable, so tasks can exist without an owner
   userId      String?
-  // @relation links this task to a user via userId foreign key.
+  // @relation links this task to a user via userId foreign key. Make code easier becous set users info.
   // onDelete: SetNull — if the user is deleted, userId becomes NULL (tasks are preserved)
   user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
-// ─── Enums ─────────────────────────────────────────────────────────────────
-// Enums create a constrained set of allowed values at the database level.
-// This is safer than storing raw strings like "pending" or "PENDING" inconsistently.
 enum TaskStatus {
   PENDING
   IN_PROGRESS
   DONE
+}
+
+// ─── Treino Models ─────────────────────────────────────────────────────────
+
+// Single user profile — nome is the primary key (used as upsert key)
+model Perfil {
+  nome            String   @id
+  sexo            String
+  altura_cm       Int
+  idade           Int
+  limitacoes      String[]
+  suplementos     String[]
+  meta_corrida_km Float
+  updatedAt       DateTime @updatedAt
+}
+
+// Training program — singleton row, always overwritten
+model Programa {
+  id           String   @id @default("singleton")
+  fase_atual   Int
+  semana_atual Int
+  inicio       String   // YYYY-MM-DD
+  updatedAt    DateTime @updatedAt
+}
+
+// Body composition measurements — unique per date, ignored if date already exists
+model Corpo {
+  id                     String @id @default(cuid())
+  data                   String @unique // YYYY-MM-DD
+  peso_kg                Float
+  gordura_pct            Float
+  massa_gorda_kg         Float
+  musculo_esqueletico_kg Float
+  agua_corporal_kg       Float
+}
+
+// Workout sessions — unique per (data, tipo), ignored if pair already exists
+model TreinoSessao {
+  id                String @id @default(cuid())
+  data              String // YYYY-MM-DD
+  tipo              String
+  descricao         String
+  duracao_min       Int
+  kcal              Float
+  fc_media          Float
+  fc_maxima         Float
+  zona_predominante Int
+  observacoes       String
+
+  @@unique([data, tipo])
 }
