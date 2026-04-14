@@ -8,23 +8,30 @@ import { treinoSchema } from '@/lib/validations'
 import { ok, badRequest, serverError } from '@/lib/api-helpers'
 import { NextResponse } from 'next/server'
 
-const CORS_ORIGIN = process.env.CORS_ORIGIN ?? 'http://localhost:3000'
+// CORS_ORIGIN accepts a comma-separated list of allowed origins.
+// e.g. CORS_ORIGIN=http://localhost:3000,https://juan-tools-xxx.vercel.app
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
 
-function corsHeaders() {
+function corsHeaders(origin?: string | null) {
+  const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
   return {
-    'Access-Control-Allow-Origin': CORS_ORIGIN,
+    'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   }
 }
 
 // Preflight for CORS
-export function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders() })
+export function OPTIONS(request: Request) {
+  const origin = request.headers.get('origin')
+  return new NextResponse(null, { status: 204, headers: corsHeaders(origin) })
 }
 
 // GET /api/treino
-export async function GET() {
+export async function GET(request: Request) {
+  const origin = request.headers.get('origin')
   try {
     const [perfil, programa, corpo, treinos] = await Promise.all([
       prisma.perfil.findFirst(),
@@ -73,7 +80,7 @@ export async function GET() {
       })),
     })
 
-    corsHeaders() && Object.entries(corsHeaders()).forEach(([k, v]) => response.headers.set(k, v))
+    Object.entries(corsHeaders(origin)).forEach(([k, v]) => response.headers.set(k, v))
     return response
   } catch (error) {
     console.error('[GET /api/treino]', error)
@@ -88,12 +95,13 @@ export async function GET() {
 //   corpo[]   — ignore if date already exists (skipDuplicates)
 //   treinos[] — ignore if (data + tipo) pair already exists (skipDuplicates)
 export async function POST(request: Request) {
+  const origin = request.headers.get('origin')
   try {
     const body = await request.json()
     const result = treinoSchema.safeParse(body)
     if (!result.success) {
       const res = badRequest('Validation failed', result.error.flatten().fieldErrors as Record<string, string[]>)
-      Object.entries(corsHeaders()).forEach(([k, v]) => res.headers.set(k, v))
+      Object.entries(corsHeaders(origin)).forEach(([k, v]) => res.headers.set(k, v))
       return res
     }
 
@@ -133,7 +141,7 @@ export async function POST(request: Request) {
     })
 
     const res = ok({ ok: true })
-    Object.entries(corsHeaders()).forEach(([k, v]) => res.headers.set(k, v))
+    Object.entries(corsHeaders(origin)).forEach(([k, v]) => res.headers.set(k, v))
     return res
   } catch (error) {
     console.error('[POST /api/treino]', error)
